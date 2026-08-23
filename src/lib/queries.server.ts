@@ -320,11 +320,8 @@ export async function loadRiskCases(
 
   const search = filters.search?.trim();
   if (search) {
-    query = query.or(
-      `transaction_ref.ilike.%${search}%`,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      { referencedTable: "transactions" } as any,
-    );
+    // Embedded-resource filters keep the search server-side instead of pulling every case.
+    query = query.or(`transaction_ref.ilike.%${search}%`, { referencedTable: "transactions" });
   }
 
   const sort = filters.sort ?? "priority";
