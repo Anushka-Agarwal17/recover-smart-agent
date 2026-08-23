@@ -389,11 +389,21 @@ export async function executeRecoveryAction(
   ]);
 
   const counter = counterFieldFor(action);
-  const update: Record<string, unknown> = { status: "in_progress" };
-  if (counter === "retry_count") update["retry_count"] = record.retry_count + 1;
-  if (counter === "reminder_count") update["reminder_count"] = record.reminder_count + 1;
-  if (counter === "reengagement_count") update["reengagement_count"] = record.reengagement_count + 1;
-  if (counter === "alt_method_count") update["alt_method_count"] = record.alt_method_count + 1;
+  const update: {
+    status: string;
+    retry_count?: number;
+    reminder_count?: number;
+    reengagement_count?: number;
+    alt_method_count?: number;
+    recovered_amount?: number;
+    recovered_at?: string;
+    stop_reason?: string;
+    recovery_probability?: number;
+  } = { status: "in_progress" };
+  if (counter === "retry_count") update.retry_count = record.retry_count + 1;
+  if (counter === "reminder_count") update.reminder_count = record.reminder_count + 1;
+  if (counter === "reengagement_count") update.reengagement_count = record.reengagement_count + 1;
+  if (counter === "alt_method_count") update.alt_method_count = record.alt_method_count + 1;
 
   let recoveredAmount = 0;
   let stopReason: string | null = null;
@@ -401,24 +411,24 @@ export async function executeRecoveryAction(
   if (outcome === "SUCCESS") {
     recoveredAmount = record.amount_at_risk;
     stopReason = "PAYMENT_SUCCEEDED";
-    update["status"] = "recovered";
-    update["recovered_amount"] = recoveredAmount;
-    update["recovered_at"] = new Date().toISOString();
-    update["stop_reason"] = stopReason;
+    update.status = "recovered";
+    update.recovered_amount = recoveredAmount;
+    update.recovered_at = new Date().toISOString();
+    update.stop_reason = stopReason;
   } else {
     const nextFeatures: CaseFeatures = {
       ...features,
-      retry_count: (update["retry_count"] as number) ?? features.retry_count,
-      reminder_count: (update["reminder_count"] as number) ?? features.reminder_count,
-      reengagement_count: (update["reengagement_count"] as number) ?? features.reengagement_count,
-      alt_method_count: (update["alt_method_count"] as number) ?? features.alt_method_count,
+      retry_count: update.retry_count ?? features.retry_count,
+      reminder_count: update.reminder_count ?? features.reminder_count,
+      reengagement_count: update.reengagement_count ?? features.reengagement_count,
+      alt_method_count: update.alt_method_count ?? features.alt_method_count,
     };
     const nextProbability = computeRecoveryProbability(nextFeatures);
     stopReason = evaluateStoppingRules(nextFeatures, nextProbability, rules);
-    update["recovery_probability"] = nextProbability;
+    update.recovery_probability = nextProbability;
     if (stopReason) {
-      update["status"] = stopReason === "CASE_ESCALATED" ? "escalated" : "stopped";
-      update["stop_reason"] = stopReason;
+      update.status = stopReason === "CASE_ESCALATED" ? "escalated" : "stopped";
+      update.stop_reason = stopReason;
     }
   }
 
@@ -444,7 +454,7 @@ export async function executeRecoveryAction(
     .from("transactions")
     .update({
       status: outcome === "SUCCESS" ? "RECOVERED" : record.transaction.failure_reason === "checkout_abandoned" ? "ABANDONED" : "FAILED",
-      retry_count: (update["retry_count"] as number) ?? record.retry_count,
+      retry_count: update.retry_count ?? record.retry_count,
       recovery_status:
         outcome === "SUCCESS"
           ? "recovered"
@@ -498,7 +508,7 @@ export async function executeRecoveryAction(
     action,
     label: ACTION_LABELS[action],
     recovered_amount: recoveredAmount,
-    status: (update["status"] as string) ?? "in_progress",
+    status: update.status ?? "in_progress",
     stop_reason: stopReason,
     message,
   };
