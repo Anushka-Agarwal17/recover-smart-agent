@@ -280,15 +280,15 @@ export interface RiskCaseRow {
 }
 
 export interface RiskFilters {
-  risk?: string;
-  kind?: string;
-  status?: string;
-  minAmount?: number;
-  maxAmount?: number;
-  search?: string;
-  page?: number;
-  pageSize?: number;
-  sort?: "priority" | "amount" | "probability" | "recent";
+  risk?: string | undefined;
+  kind?: string | undefined;
+  status?: string | undefined;
+  minAmount?: number | undefined;
+  maxAmount?: number | undefined;
+  search?: string | undefined;
+  page?: number | undefined;
+  pageSize?: number | undefined;
+  sort?: "priority" | "amount" | "probability" | "recent" | undefined;
 }
 
 export async function loadRiskCases(
@@ -508,12 +508,12 @@ export async function loadTransactions(
   db: Db,
   userId: string,
   params: {
-    page?: number;
-    pageSize?: number;
-    status?: string;
-    method?: string;
-    search?: string;
-    sort?: "recent" | "amount";
+    page?: number | undefined;
+    pageSize?: number | undefined;
+    status?: string | undefined;
+    method?: string | undefined;
+    search?: string | undefined;
+    sort?: "recent" | "amount" | undefined;
   },
 ): Promise<{ rows: TransactionRow[]; total: number }> {
   const page = Math.max(1, params.page ?? 1);
@@ -578,7 +578,12 @@ export interface CustomerRow {
 export async function loadCustomers(
   db: Db,
   userId: string,
-  params: { page?: number; pageSize?: number; search?: string; risk?: string },
+  params: {
+    page?: number | undefined;
+    pageSize?: number | undefined;
+    search?: string | undefined;
+    risk?: string | undefined;
+  },
 ): Promise<{ rows: CustomerRow[]; total: number }> {
   const page = Math.max(1, params.page ?? 1);
   const pageSize = Math.min(100, Math.max(5, params.pageSize ?? 25));
@@ -689,7 +694,12 @@ export async function loadCustomerDetail(
 export async function loadAudit(
   db: Db,
   userId: string,
-  params: { page?: number; pageSize?: number; type?: string; search?: string },
+  params: {
+    page?: number | undefined;
+    pageSize?: number | undefined;
+    type?: string | undefined;
+    search?: string | undefined;
+  },
 ) {
   const page = Math.max(1, params.page ?? 1);
   const pageSize = Math.min(100, Math.max(10, params.pageSize ?? 30));
