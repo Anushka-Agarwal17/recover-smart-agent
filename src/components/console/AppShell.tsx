@@ -175,5 +175,6 @@ export function AppShell({
         <main className={cn("flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8")}>{children}</main>
       </div>
     </div>
+    </TooltipProvider>
   );
 }
