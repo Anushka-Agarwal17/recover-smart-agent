@@ -10,33 +10,201 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedConsoleIndexRouteImport } from './routes/_authenticated/console.index'
+import { Route as AuthenticatedConsoleAgentRouteImport } from './routes/_authenticated/console.agent'
+import { Route as AuthenticatedConsoleAnalyticsRouteImport } from './routes/_authenticated/console.analytics'
+import { Route as AuthenticatedConsoleAuditRouteImport } from './routes/_authenticated/console.audit'
+import { Route as AuthenticatedConsoleQueueRouteImport } from './routes/_authenticated/console.queue'
+import { Route as AuthenticatedConsoleSettingsRouteImport } from './routes/_authenticated/console.settings'
+import { Route as AuthenticatedConsoleTransactionsRouteImport } from './routes/_authenticated/console.transactions'
+import { Route as AuthenticatedConsoleCustomersIndexRouteImport } from './routes/_authenticated/console.customers.index'
+import { Route as AuthenticatedConsoleCustomersCustomerIdRouteImport } from './routes/_authenticated/console.customers.$customerId'
+import { Route as AuthenticatedConsoleRiskIndexRouteImport } from './routes/_authenticated/console.risk.index'
+import { Route as AuthenticatedConsoleRiskCaseIdRouteImport } from './routes/_authenticated/console.risk.$caseId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedConsoleIndexRoute =
+  AuthenticatedConsoleIndexRouteImport.update({
+    id: '/console/',
+    path: '/console/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConsoleAgentRoute =
+  AuthenticatedConsoleAgentRouteImport.update({
+    id: '/console/agent',
+    path: '/console/agent',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConsoleAnalyticsRoute =
+  AuthenticatedConsoleAnalyticsRouteImport.update({
+    id: '/console/analytics',
+    path: '/console/analytics',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConsoleAuditRoute =
+  AuthenticatedConsoleAuditRouteImport.update({
+    id: '/console/audit',
+    path: '/console/audit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConsoleQueueRoute =
+  AuthenticatedConsoleQueueRouteImport.update({
+    id: '/console/queue',
+    path: '/console/queue',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConsoleSettingsRoute =
+  AuthenticatedConsoleSettingsRouteImport.update({
+    id: '/console/settings',
+    path: '/console/settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConsoleTransactionsRoute =
+  AuthenticatedConsoleTransactionsRouteImport.update({
+    id: '/console/transactions',
+    path: '/console/transactions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConsoleCustomersIndexRoute =
+  AuthenticatedConsoleCustomersIndexRouteImport.update({
+    id: '/console/customers/',
+    path: '/console/customers/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConsoleCustomersCustomerIdRoute =
+  AuthenticatedConsoleCustomersCustomerIdRouteImport.update({
+    id: '/console/customers/$customerId',
+    path: '/console/customers/$customerId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConsoleRiskIndexRoute =
+  AuthenticatedConsoleRiskIndexRouteImport.update({
+    id: '/console/risk/',
+    path: '/console/risk/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConsoleRiskCaseIdRoute =
+  AuthenticatedConsoleRiskCaseIdRouteImport.update({
+    id: '/console/risk/$caseId',
+    path: '/console/risk/$caseId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/console/agent': typeof AuthenticatedConsoleAgentRoute
+  '/console/analytics': typeof AuthenticatedConsoleAnalyticsRoute
+  '/console/audit': typeof AuthenticatedConsoleAuditRoute
+  '/console/queue': typeof AuthenticatedConsoleQueueRoute
+  '/console/settings': typeof AuthenticatedConsoleSettingsRoute
+  '/console/transactions': typeof AuthenticatedConsoleTransactionsRoute
+  '/console/': typeof AuthenticatedConsoleIndexRoute
+  '/console/customers/$customerId': typeof AuthenticatedConsoleCustomersCustomerIdRoute
+  '/console/risk/$caseId': typeof AuthenticatedConsoleRiskCaseIdRoute
+  '/console/customers/': typeof AuthenticatedConsoleCustomersIndexRoute
+  '/console/risk/': typeof AuthenticatedConsoleRiskIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/console/agent': typeof AuthenticatedConsoleAgentRoute
+  '/console/analytics': typeof AuthenticatedConsoleAnalyticsRoute
+  '/console/audit': typeof AuthenticatedConsoleAuditRoute
+  '/console/queue': typeof AuthenticatedConsoleQueueRoute
+  '/console/settings': typeof AuthenticatedConsoleSettingsRoute
+  '/console/transactions': typeof AuthenticatedConsoleTransactionsRoute
+  '/console': typeof AuthenticatedConsoleIndexRoute
+  '/console/customers/$customerId': typeof AuthenticatedConsoleCustomersCustomerIdRoute
+  '/console/risk/$caseId': typeof AuthenticatedConsoleRiskCaseIdRoute
+  '/console/customers': typeof AuthenticatedConsoleCustomersIndexRoute
+  '/console/risk': typeof AuthenticatedConsoleRiskIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/console/agent': typeof AuthenticatedConsoleAgentRoute
+  '/_authenticated/console/analytics': typeof AuthenticatedConsoleAnalyticsRoute
+  '/_authenticated/console/audit': typeof AuthenticatedConsoleAuditRoute
+  '/_authenticated/console/queue': typeof AuthenticatedConsoleQueueRoute
+  '/_authenticated/console/settings': typeof AuthenticatedConsoleSettingsRoute
+  '/_authenticated/console/transactions': typeof AuthenticatedConsoleTransactionsRoute
+  '/_authenticated/console/': typeof AuthenticatedConsoleIndexRoute
+  '/_authenticated/console/customers/$customerId': typeof AuthenticatedConsoleCustomersCustomerIdRoute
+  '/_authenticated/console/risk/$caseId': typeof AuthenticatedConsoleRiskCaseIdRoute
+  '/_authenticated/console/customers/': typeof AuthenticatedConsoleCustomersIndexRoute
+  '/_authenticated/console/risk/': typeof AuthenticatedConsoleRiskIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/console/agent'
+    | '/console/analytics'
+    | '/console/audit'
+    | '/console/queue'
+    | '/console/settings'
+    | '/console/transactions'
+    | '/console/'
+    | '/console/customers/$customerId'
+    | '/console/risk/$caseId'
+    | '/console/customers/'
+    | '/console/risk/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/console/agent'
+    | '/console/analytics'
+    | '/console/audit'
+    | '/console/queue'
+    | '/console/settings'
+    | '/console/transactions'
+    | '/console'
+    | '/console/customers/$customerId'
+    | '/console/risk/$caseId'
+    | '/console/customers'
+    | '/console/risk'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/console/agent'
+    | '/_authenticated/console/analytics'
+    | '/_authenticated/console/audit'
+    | '/_authenticated/console/queue'
+    | '/_authenticated/console/settings'
+    | '/_authenticated/console/transactions'
+    | '/_authenticated/console/'
+    | '/_authenticated/console/customers/$customerId'
+    | '/_authenticated/console/risk/$caseId'
+    | '/_authenticated/console/customers/'
+    | '/_authenticated/console/risk/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +216,137 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/console/': {
+      id: '/_authenticated/console/'
+      path: '/console'
+      fullPath: '/console/'
+      preLoaderRoute: typeof AuthenticatedConsoleIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/console/agent': {
+      id: '/_authenticated/console/agent'
+      path: '/console/agent'
+      fullPath: '/console/agent'
+      preLoaderRoute: typeof AuthenticatedConsoleAgentRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/console/analytics': {
+      id: '/_authenticated/console/analytics'
+      path: '/console/analytics'
+      fullPath: '/console/analytics'
+      preLoaderRoute: typeof AuthenticatedConsoleAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/console/audit': {
+      id: '/_authenticated/console/audit'
+      path: '/console/audit'
+      fullPath: '/console/audit'
+      preLoaderRoute: typeof AuthenticatedConsoleAuditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/console/queue': {
+      id: '/_authenticated/console/queue'
+      path: '/console/queue'
+      fullPath: '/console/queue'
+      preLoaderRoute: typeof AuthenticatedConsoleQueueRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/console/settings': {
+      id: '/_authenticated/console/settings'
+      path: '/console/settings'
+      fullPath: '/console/settings'
+      preLoaderRoute: typeof AuthenticatedConsoleSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/console/transactions': {
+      id: '/_authenticated/console/transactions'
+      path: '/console/transactions'
+      fullPath: '/console/transactions'
+      preLoaderRoute: typeof AuthenticatedConsoleTransactionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/console/customers/': {
+      id: '/_authenticated/console/customers/'
+      path: '/console/customers'
+      fullPath: '/console/customers/'
+      preLoaderRoute: typeof AuthenticatedConsoleCustomersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/console/customers/$customerId': {
+      id: '/_authenticated/console/customers/$customerId'
+      path: '/console/customers/$customerId'
+      fullPath: '/console/customers/$customerId'
+      preLoaderRoute: typeof AuthenticatedConsoleCustomersCustomerIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/console/risk/': {
+      id: '/_authenticated/console/risk/'
+      path: '/console/risk'
+      fullPath: '/console/risk/'
+      preLoaderRoute: typeof AuthenticatedConsoleRiskIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/console/risk/$caseId': {
+      id: '/_authenticated/console/risk/$caseId'
+      path: '/console/risk/$caseId'
+      fullPath: '/console/risk/$caseId'
+      preLoaderRoute: typeof AuthenticatedConsoleRiskCaseIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedConsoleAgentRoute: typeof AuthenticatedConsoleAgentRoute
+  AuthenticatedConsoleAnalyticsRoute: typeof AuthenticatedConsoleAnalyticsRoute
+  AuthenticatedConsoleAuditRoute: typeof AuthenticatedConsoleAuditRoute
+  AuthenticatedConsoleQueueRoute: typeof AuthenticatedConsoleQueueRoute
+  AuthenticatedConsoleSettingsRoute: typeof AuthenticatedConsoleSettingsRoute
+  AuthenticatedConsoleTransactionsRoute: typeof AuthenticatedConsoleTransactionsRoute
+  AuthenticatedConsoleIndexRoute: typeof AuthenticatedConsoleIndexRoute
+  AuthenticatedConsoleCustomersCustomerIdRoute: typeof AuthenticatedConsoleCustomersCustomerIdRoute
+  AuthenticatedConsoleRiskCaseIdRoute: typeof AuthenticatedConsoleRiskCaseIdRoute
+  AuthenticatedConsoleCustomersIndexRoute: typeof AuthenticatedConsoleCustomersIndexRoute
+  AuthenticatedConsoleRiskIndexRoute: typeof AuthenticatedConsoleRiskIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedConsoleAgentRoute: AuthenticatedConsoleAgentRoute,
+  AuthenticatedConsoleAnalyticsRoute: AuthenticatedConsoleAnalyticsRoute,
+  AuthenticatedConsoleAuditRoute: AuthenticatedConsoleAuditRoute,
+  AuthenticatedConsoleQueueRoute: AuthenticatedConsoleQueueRoute,
+  AuthenticatedConsoleSettingsRoute: AuthenticatedConsoleSettingsRoute,
+  AuthenticatedConsoleTransactionsRoute: AuthenticatedConsoleTransactionsRoute,
+  AuthenticatedConsoleIndexRoute: AuthenticatedConsoleIndexRoute,
+  AuthenticatedConsoleCustomersCustomerIdRoute:
+    AuthenticatedConsoleCustomersCustomerIdRoute,
+  AuthenticatedConsoleRiskCaseIdRoute: AuthenticatedConsoleRiskCaseIdRoute,
+  AuthenticatedConsoleCustomersIndexRoute:
+    AuthenticatedConsoleCustomersIndexRoute,
+  AuthenticatedConsoleRiskIndexRoute: AuthenticatedConsoleRiskIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
