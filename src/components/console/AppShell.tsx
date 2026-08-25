@@ -20,7 +20,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Pill } from "@/components/console/primitives";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -93,6 +93,7 @@ export function AppShell({
   };
 
   return (
+    <TooltipProvider delayDuration={200}>
     <div className="min-h-screen bg-background lg:grid lg:grid-cols-[248px_1fr]">
       <aside className="hidden border-r border-sidebar-border bg-sidebar lg:flex lg:h-screen lg:flex-col lg:sticky lg:top-0">
         <div className="px-5 py-5">
@@ -174,5 +175,6 @@ export function AppShell({
         <main className={cn("flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8")}>{children}</main>
       </div>
     </div>
+    </TooltipProvider>
   );
 }
