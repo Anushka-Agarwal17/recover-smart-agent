@@ -93,6 +93,7 @@ export function AppShell({
   };
 
   return (
+    <TooltipProvider delayDuration={200}>
     <div className="min-h-screen bg-background lg:grid lg:grid-cols-[248px_1fr]">
       <aside className="hidden border-r border-sidebar-border bg-sidebar lg:flex lg:h-screen lg:flex-col lg:sticky lg:top-0">
         <div className="px-5 py-5">
