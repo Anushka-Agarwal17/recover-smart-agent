@@ -233,6 +233,7 @@ export async function loadOverview(db: Db, userId: string): Promise<OverviewData
       const linked = caseById.get(d.case_id);
       return {
         id: d.id,
+        case_id: d.case_id,
         created_at: d.created_at,
         transaction_ref:
           (linked?.transactions as { transaction_ref: string } | null)?.transaction_ref ?? "—",
