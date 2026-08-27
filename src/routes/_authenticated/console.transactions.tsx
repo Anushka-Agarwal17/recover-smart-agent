@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { useState } from "react";
 
@@ -14,6 +14,7 @@ import {
   humanize,
   toneForStatus,
 } from "@/components/console/primitives";
+import { CaseDrawer } from "@/components/console/CaseDrawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +48,7 @@ function TransactionsPage() {
   const [sort, setSort] = useState<"recent" | "amount">("recent");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [activeCaseId, setActiveCaseId] = useState<string | null>(null);
 
   const params = { status, method, sort, search: search.trim() || undefined, page, pageSize: PAGE_SIZE };
   const query = useQuery({
@@ -180,7 +182,22 @@ function TransactionsPage() {
               </TableHeader>
               <TableBody>
                 {query.data.rows.map((row) => (
-                  <TableRow key={row.id}>
+                  <TableRow
+                    key={row.id}
+                    onClick={row.case_id ? () => setActiveCaseId(row.case_id) : undefined}
+                    className={row.case_id ? "cursor-pointer" : undefined}
+                    tabIndex={row.case_id ? 0 : undefined}
+                    onKeyDown={
+                      row.case_id
+                        ? (e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setActiveCaseId(row.case_id);
+                            }
+                          }
+                        : undefined
+                    }
+                  >
                     <TableCell className="num text-xs">{row.transaction_ref}</TableCell>
                     <TableCell className="text-xs">{row.customer_name}</TableCell>
                     <TableCell className="num text-xs">{formatCurrency(row.amount, row.currency)}</TableCell>
@@ -196,10 +213,15 @@ function TransactionsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       {row.case_id ? (
-                        <Button asChild size="sm" variant="outline">
-                          <Link to="/console/risk/$caseId" params={{ caseId: row.case_id }}>
-                            Open
-                          </Link>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveCaseId(row.case_id);
+                          }}
+                        >
+                          Open
                         </Button>
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
@@ -231,6 +253,8 @@ function TransactionsPage() {
           </div>
         </Panel>
       )}
+
+      <CaseDrawer caseId={activeCaseId} onClose={() => setActiveCaseId(null)} />
     </div>
   );
 }
