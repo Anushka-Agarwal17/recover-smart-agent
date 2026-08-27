@@ -24,6 +24,7 @@ export interface OverviewData {
   }>;
   recentDecisions: Array<{
     id: string;
+    case_id: string;
     created_at: string;
     transaction_ref: string;
     customer: string;
