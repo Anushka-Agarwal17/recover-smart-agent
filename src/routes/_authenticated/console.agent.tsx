@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Bot, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 import {
   EmptyState,
@@ -15,6 +16,7 @@ import {
   humanize,
   toneForRisk,
 } from "@/components/console/primitives";
+import { CaseDrawer } from "@/components/console/CaseDrawer";
 import { Button } from "@/components/ui/button";
 import { ACTION_LABELS, formatCurrency, type RecoveryAction } from "@/lib/recovery-engine";
 import { getOverview, getSettings, runRecoveryBatchFn } from "@/lib/recoverai.functions";
@@ -46,6 +48,7 @@ const WORKFLOW = [
 
 function AgentPage() {
   const qc = useQueryClient();
+  const [activeCaseId, setActiveCaseId] = useState<string | null>(null);
   const overview = useQuery({ queryKey: ["overview"], queryFn: () => getOverview() });
   const settings = useQuery({ queryKey: ["settings"], queryFn: () => getSettings() });
 
@@ -150,7 +153,19 @@ function AgentPage() {
         )}
         <ul className="space-y-3">
           {overview.data?.recentDecisions.map((decision) => (
-            <li key={decision.id} className="rounded-xl border border-border p-4">
+            <li
+              key={decision.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => setActiveCaseId(decision.case_id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setActiveCaseId(decision.case_id);
+                }
+              }}
+              className="cursor-pointer rounded-xl border border-border p-4 outline-none transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring"
+            >
               <div className="flex flex-wrap items-center gap-2">
                 <Bot className="size-4 text-primary" aria-hidden />
                 <span className="num text-xs">{decision.transaction_ref}</span>
@@ -176,6 +191,8 @@ function AgentPage() {
           ))}
         </ul>
       </Panel>
+
+      <CaseDrawer caseId={activeCaseId} onClose={() => setActiveCaseId(null)} />
     </div>
   );
 }

@@ -181,18 +181,20 @@ function TransactionsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {query.data.rows.map((row) => (
+                {query.data.rows.map((row) => {
+                  const caseId = row.case_id;
+                  return (
                   <TableRow
                     key={row.id}
-                    onClick={row.case_id ? () => setActiveCaseId(row.case_id) : undefined}
-                    className={row.case_id ? "cursor-pointer" : undefined}
-                    tabIndex={row.case_id ? 0 : undefined}
+                    onClick={caseId ? () => setActiveCaseId(caseId) : undefined}
+                    className={caseId ? "cursor-pointer" : undefined}
+                    tabIndex={caseId ? 0 : undefined}
                     onKeyDown={
                       row.case_id
                         ? (e) => {
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
-                              setActiveCaseId(row.case_id);
+                              setActiveCaseId(caseId);
                             }
                           }
                         : undefined
@@ -212,13 +214,13 @@ function TransactionsPage() {
                       {formatDateTime(row.occurred_at)}
                     </TableCell>
                     <TableCell className="text-right">
-                      {row.case_id ? (
+                      {caseId ? (
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setActiveCaseId(row.case_id);
+                            setActiveCaseId(caseId);
                           }}
                         >
                           Open
@@ -228,7 +230,8 @@ function TransactionsPage() {
                       )}
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
