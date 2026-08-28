@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Bot, Loader2, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 import {
   EmptyState,
@@ -16,6 +17,7 @@ import {
   toneForRisk,
   toneForStatus,
 } from "@/components/console/primitives";
+import { CaseDrawer } from "@/components/console/CaseDrawer";
 import { Button } from "@/components/ui/button";
 import { ACTION_LABELS, formatCurrency, type RecoveryAction } from "@/lib/recovery-engine";
 import {
@@ -44,6 +46,7 @@ export const Route = createFileRoute("/_authenticated/console/queue")({
 
 function QueuePage() {
   const qc = useQueryClient();
+  const [activeCaseId, setActiveCaseId] = useState<string | null>(null);
   const filters = { status: "open", sort: "priority" as const, page: 1, pageSize: 15 };
   const query = useQuery({
     queryKey: ["risk-cases", "queue", filters],
@@ -120,7 +123,20 @@ function QueuePage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {query.data?.rows.map((row) => (
-          <Panel key={row.id} className="flex flex-col gap-4">
+          <div
+            key={row.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => setActiveCaseId(row.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setActiveCaseId(row.id);
+              }
+            }}
+            className="cursor-pointer rounded-xl outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+          >
+          <Panel className="flex h-full flex-col gap-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="num text-xs text-muted-foreground">{row.transaction_ref}</p>
@@ -156,7 +172,7 @@ function QueuePage() {
                 : "Not analysed yet"}
             </p>
 
-            <div className="mt-auto flex flex-wrap gap-2">
+            <div className="mt-auto flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
               <Button
                 size="sm"
                 variant="outline"
@@ -182,15 +198,16 @@ function QueuePage() {
                 )}
                 Execute
               </Button>
-              <Button asChild size="sm" variant="ghost">
-                <Link to="/console/risk/$caseId" params={{ caseId: row.id }}>
-                  Details
-                </Link>
+              <Button size="sm" variant="ghost" onClick={() => setActiveCaseId(row.id)}>
+                Details
               </Button>
             </div>
           </Panel>
+          </div>
         ))}
       </div>
+
+      <CaseDrawer caseId={activeCaseId} onClose={() => setActiveCaseId(null)} />
     </div>
   );
 }
