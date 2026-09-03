@@ -186,12 +186,8 @@ async function persistDecision(
         features.hours_since_failure,
         record.retry_count + record.reminder_count + record.reengagement_count + record.alt_method_count,
       ),
-      status:
-        decision.stop_reason && record.status !== "recovered"
-          ? decision.stop_reason === "CASE_ESCALATED"
-            ? "escalated"
-            : "stopped"
-          : record.status,
+      // Analysis is non-destructive: status only changes when an action is executed.
+      status: record.status,
     })
     .eq("id", record.id)
     .eq("user_id", userId);
