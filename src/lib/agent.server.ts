@@ -219,9 +219,9 @@ async function persistDecision(
             transaction_ref: record.transaction.transaction_ref,
             case_id: record.id,
             actor: "guardrails",
-            action: "HALT_AUTOMATION",
+            action: "FLAG_DURING_ANALYSIS",
             reason: decision.stop_reason,
-            result: "no further automated attempts",
+            result: "flagged during analysis; case remains open until execution",
           },
         ]
       : []),
