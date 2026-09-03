@@ -186,12 +186,8 @@ async function persistDecision(
         features.hours_since_failure,
         record.retry_count + record.reminder_count + record.reengagement_count + record.alt_method_count,
       ),
-      status:
-        decision.stop_reason && record.status !== "recovered"
-          ? decision.stop_reason === "CASE_ESCALATED"
-            ? "escalated"
-            : "stopped"
-          : record.status,
+      // Analysis is non-destructive: status only changes when an action is executed.
+      status: record.status,
     })
     .eq("id", record.id)
     .eq("user_id", userId);
@@ -223,9 +219,9 @@ async function persistDecision(
             transaction_ref: record.transaction.transaction_ref,
             case_id: record.id,
             actor: "guardrails",
-            action: "HALT_AUTOMATION",
+            action: "FLAG_DURING_ANALYSIS",
             reason: decision.stop_reason,
-            result: "no further automated attempts",
+            result: "flagged during analysis; case remains open until execution",
           },
         ]
       : []),
