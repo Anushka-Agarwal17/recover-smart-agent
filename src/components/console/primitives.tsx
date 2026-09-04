@@ -155,21 +155,30 @@ export function toneForStatus(status: string): Tone {
   switch (status.toUpperCase()) {
     case "SUCCESS":
     case "RECOVERED":
+    case "RECOVERY_SUCCEEDED":
       return "success";
     case "FAILED":
+    case "RECOVERY_FAILED":
       return "danger";
     case "ABANDONED":
     case "PENDING":
     case "STOPPED":
+    case "EXECUTION_BLOCKED":
+    case "STOPPING_RULE_TRIGGERED":
       return "warning";
     case "IN_PROGRESS":
     case "OPEN":
+    case "AI_ANALYSIS_COMPLETED":
+    case "RECOVERY_ACTION_SELECTED":
+    case "EXECUTION_ATTEMPTED":
+    case "RECOVERY_ATTEMPT_STARTED":
       return "info";
     case "ESCALATED":
       return "warning";
     default:
       return "neutral";
   }
+
 }
 
 export function toneForRisk(risk: string): Tone {
