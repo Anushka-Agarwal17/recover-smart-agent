@@ -367,6 +367,8 @@ export async function loadRiskCases(
       amount_at_risk: Number(row.amount_at_risk),
       recommended_action: row.recommended_action,
       status: row.status,
+      stop_reason: row.stop_reason ?? null,
+
       risk_level: row.risk_level,
       priority_score: Number(row.priority_score),
     };
