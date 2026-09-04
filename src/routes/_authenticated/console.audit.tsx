@@ -42,16 +42,23 @@ export const Route = createFileRoute("/_authenticated/console/audit")({
   component: AuditPage,
 });
 
+// Values must match the event_type strings written by the recovery engine.
 const EVENT_TYPES = [
   "all",
-  "case_detected",
-  "case_analyzed",
-  "action_executed",
-  "action_blocked",
-  "case_escalated",
-  "demo_data_reset",
-  "settings_updated",
+  "CASE_CREATED",
+  "AI_ANALYSIS_COMPLETED",
+  "RECOVERY_ACTION_SELECTED",
+  "EXECUTION_ATTEMPTED",
+  "RECOVERY_ATTEMPT_STARTED",
+  "RECOVERY_SUCCEEDED",
+  "RECOVERY_FAILED",
+  "EXECUTION_BLOCKED",
+  "STOPPING_RULE_TRIGGERED",
+  "ESCALATED",
+  "DATA_RESET",
+  "SETTINGS_UPDATED",
 ];
+
 
 const PAGE_SIZE = 30;
 

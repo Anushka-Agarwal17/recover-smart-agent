@@ -303,6 +303,8 @@ export async function executeRecoveryAction(
   const record = await fetchCase(db, userId, caseId);
   if (record.status === "recovered") fail("This transaction is already recovered; no further action is allowed.");
   if (record.status === "escalated") fail("This case is escalated and is no longer handled automatically.");
+  if (record.status === "stopped")
+    fail("Automated recovery is already stopped for this case; no further action is allowed.");
 
   const features = featuresOf(record);
   const probability = computeRecoveryProbability(features);
@@ -322,11 +324,25 @@ export async function executeRecoveryAction(
   const action = latestDecision.recommended_action as RecoveryAction;
   if (!RECOVERY_ACTIONS.includes(action)) fail("The selected action is not a permitted recovery action.");
 
-  if (stop || action === "NO_ACTION" || action === "ESCALATE") {
-    const reason = stop ?? (action === "ESCALATE" ? "CASE_ESCALATED" : "NO_ELIGIBLE_ACTION");
+  // Every execution attempt is recorded, whether it proceeds or is blocked.
+  await writeAudit(db, userId, [
+    {
+      event_type: "EXECUTION_ATTEMPTED",
+      transaction_ref: record.transaction.transaction_ref,
+      customer_id: record.customer.id,
+      case_id: record.id,
+      actor: "merchant",
+      action,
+      reason: latestDecision.reason,
+      result: "execution requested",
+    },
+  ]);
+
+  // Escalation is a deliberate terminal hand-off to a human.
+  if (action === "ESCALATE") {
     await db
       .from("recovery_cases")
-      .update({ status: action === "ESCALATE" ? "escalated" : "stopped", stop_reason: reason })
+      .update({ status: "escalated", stop_reason: "CASE_ESCALATED" })
       .eq("id", record.id)
       .eq("user_id", userId);
     await db.from("recovery_attempts").insert({
@@ -334,35 +350,74 @@ export async function executeRecoveryAction(
       case_id: record.id,
       decision_id: latestDecision.id,
       action,
-      outcome: action === "ESCALATE" ? "ESCALATED" : "NO_RESPONSE",
+      outcome: "ESCALATED",
       amount: record.amount_at_risk,
       recovered_amount: 0,
-      reason,
+      reason: stop ?? "CASE_ESCALATED",
     });
+    await db
+      .from("transactions")
+      .update({ recovery_status: "escalated" })
+      .eq("id", record.transaction.id)
+      .eq("user_id", userId);
     await writeAudit(db, userId, [
       {
-        event_type: action === "ESCALATE" ? "ESCALATED" : "STOPPING_RULE_TRIGGERED",
+        event_type: "ESCALATED",
         transaction_ref: record.transaction.transaction_ref,
         case_id: record.id,
         actor: "recovery_engine",
         action,
-        reason,
-        result: "automation halted",
+        reason: stop ?? "CASE_ESCALATED",
+        result: "handed to manual review; automation halted",
       },
     ]);
     return {
-      outcome: action === "ESCALATE" ? "ESCALATED" : "NO_RESPONSE",
+      outcome: "ESCALATED",
       action,
       label: ACTION_LABELS[action],
       recovered_amount: 0,
-      status: action === "ESCALATE" ? "escalated" : "stopped",
-      stop_reason: reason,
-      message:
-        action === "ESCALATE"
-          ? "Case escalated for manual review. Automated recovery has stopped."
-          : `Automated recovery stopped: ${reason.toLowerCase().replace(/_/g, " ")}.`,
+      status: "escalated",
+      stop_reason: "CASE_ESCALATED",
+      message: "Case escalated for manual review. Automated recovery has stopped.",
     };
   }
+
+  // A guardrail block is a safe no-op: nothing is executed and the case stays open.
+  if (stop || action === "NO_ACTION") {
+    const reason = stop ?? "NO_ELIGIBLE_ACTION";
+    const readable = reason.toLowerCase().replace(/_/g, " ");
+    await writeAudit(db, userId, [
+      {
+        event_type: "EXECUTION_BLOCKED",
+        transaction_ref: record.transaction.transaction_ref,
+        customer_id: record.customer.id,
+        case_id: record.id,
+        actor: "guardrails",
+        action,
+        reason,
+        result: "blocked before execution; case remains open",
+      },
+      {
+        event_type: "STOPPING_RULE_TRIGGERED",
+        transaction_ref: record.transaction.transaction_ref,
+        case_id: record.id,
+        actor: "guardrails",
+        action: "BLOCK_EXECUTION",
+        reason,
+        result: "no recovery action was performed",
+      },
+    ]);
+    return {
+      outcome: "BLOCKED",
+      action,
+      label: ACTION_LABELS[action],
+      recovered_amount: 0,
+      status: record.status,
+      stop_reason: reason,
+      message: `Blocked by recovery policy: ${readable}. No action was performed and the case remains open.`,
+    };
+  }
+
 
   const attemptIndex =
     record.retry_count + record.reminder_count + record.reengagement_count + record.alt_method_count;

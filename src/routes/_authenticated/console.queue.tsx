@@ -47,7 +47,9 @@ export const Route = createFileRoute("/_authenticated/console/queue")({
 function QueuePage() {
   const qc = useQueryClient();
   const [activeCaseId, setActiveCaseId] = useState<string | null>(null);
-  const filters = { status: "open", sort: "priority" as const, page: 1, pageSize: 15 };
+  // "active" keeps analysed and partially-attempted cases visible; only terminal states leave the queue.
+  const filters = { status: "active", sort: "priority" as const, page: 1, pageSize: 15 };
+
   const query = useQuery({
     queryKey: ["risk-cases", "queue", filters],
     queryFn: () => listRiskCases({ data: filters }),
@@ -82,11 +84,13 @@ function QueuePage() {
     mutationFn: (caseId: string) => executeRecovery({ data: { caseId } }),
     onSuccess: async (result) => {
       if (result.outcome === "SUCCESS") toast.success(result.message);
-      else toast.warning(result.message);
+      else if (result.outcome === "BLOCKED") toast.warning(result.message);
+      else toast.info(result.message);
       await refresh();
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Execution failed."),
   });
+
 
   return (
     <div className="space-y-6">
@@ -172,6 +176,12 @@ function QueuePage() {
                 : "Not analysed yet"}
             </p>
 
+            {row.stop_reason && (
+              <p className="text-xs text-warning">
+                Guardrail flagged: {humanize(row.stop_reason)} — execution will be blocked.
+              </p>
+            )}
+
             <div className="mt-auto flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
               <Button
                 size="sm"
@@ -189,8 +199,20 @@ function QueuePage() {
               <Button
                 size="sm"
                 onClick={() => execute.mutate(row.id)}
-                disabled={execute.isPending || !row.recommended_action}
+                disabled={
+                  execute.isPending ||
+                  !row.recommended_action ||
+                  row.recommended_action === "NO_ACTION"
+                }
+                title={
+                  !row.recommended_action
+                    ? "Analyse this case first"
+                    : row.recommended_action === "NO_ACTION"
+                      ? "No eligible recovery action — guardrails allow no intervention"
+                      : undefined
+                }
               >
+
                 {execute.isPending && execute.variables === row.id ? (
                   <Loader2 className="size-4 animate-spin" aria-hidden />
                 ) : (
