@@ -47,7 +47,9 @@ export const Route = createFileRoute("/_authenticated/console/queue")({
 function QueuePage() {
   const qc = useQueryClient();
   const [activeCaseId, setActiveCaseId] = useState<string | null>(null);
-  const filters = { status: "open", sort: "priority" as const, page: 1, pageSize: 15 };
+  // "active" keeps analysed and partially-attempted cases visible; only terminal states leave the queue.
+  const filters = { status: "active", sort: "priority" as const, page: 1, pageSize: 15 };
+
   const query = useQuery({
     queryKey: ["risk-cases", "queue", filters],
     queryFn: () => listRiskCases({ data: filters }),
