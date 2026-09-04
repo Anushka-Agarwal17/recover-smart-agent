@@ -277,9 +277,11 @@ export interface RiskCaseRow {
   amount_at_risk: number;
   recommended_action: string | null;
   status: string;
+  stop_reason: string | null;
   risk_level: string;
   priority_score: number;
 }
+
 
 export interface RiskFilters {
   risk?: string | undefined;
