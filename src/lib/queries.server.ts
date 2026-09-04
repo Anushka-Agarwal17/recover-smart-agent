@@ -306,14 +306,17 @@ export async function loadRiskCases(
   let query = db
     .from("recovery_cases")
     .select(
-      "id, amount_at_risk, recovery_probability, recommended_action, status, risk_level, priority_score, transactions!inner(transaction_ref, amount, currency, failure_reason, occurred_at, status), customers!inner(name, email, previous_success_count)",
+      "id, amount_at_risk, recovery_probability, recommended_action, status, stop_reason, risk_level, priority_score, transactions!inner(transaction_ref, amount, currency, failure_reason, occurred_at, status), customers!inner(name, email, previous_success_count)",
       { count: "exact" },
     )
     .eq("user_id", userId);
 
   if (filters.risk && filters.risk !== "all") query = query.eq("risk_level", filters.risk);
-  if (filters.status && filters.status !== "all") query = query.eq("status", filters.status);
+  // "active" keeps non-terminal cases (open + in_progress) in the Recovery Queue.
+  if (filters.status === "active") query = query.in("status", ["open", "in_progress"]);
+  else if (filters.status && filters.status !== "all") query = query.eq("status", filters.status);
   if (filters.minAmount != null) query = query.gte("amount_at_risk", filters.minAmount);
+
   if (filters.maxAmount != null) query = query.lte("amount_at_risk", filters.maxAmount);
   if (filters.kind === "checkout_abandoned")
     query = query.eq("transactions.failure_reason", "checkout_abandoned");
