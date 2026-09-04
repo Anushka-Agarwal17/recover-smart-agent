@@ -176,6 +176,12 @@ function QueuePage() {
                 : "Not analysed yet"}
             </p>
 
+            {row.stop_reason && (
+              <p className="text-xs text-warning">
+                Guardrail flagged: {humanize(row.stop_reason)} — execution will be blocked.
+              </p>
+            )}
+
             <div className="mt-auto flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
               <Button
                 size="sm"
@@ -193,8 +199,20 @@ function QueuePage() {
               <Button
                 size="sm"
                 onClick={() => execute.mutate(row.id)}
-                disabled={execute.isPending || !row.recommended_action}
+                disabled={
+                  execute.isPending ||
+                  !row.recommended_action ||
+                  row.recommended_action === "NO_ACTION"
+                }
+                title={
+                  !row.recommended_action
+                    ? "Analyse this case first"
+                    : row.recommended_action === "NO_ACTION"
+                      ? "No eligible recovery action — guardrails allow no intervention"
+                      : undefined
+                }
               >
+
                 {execute.isPending && execute.variables === row.id ? (
                   <Loader2 className="size-4 animate-spin" aria-hidden />
                 ) : (
