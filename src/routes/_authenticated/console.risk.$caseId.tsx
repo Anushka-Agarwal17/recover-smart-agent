@@ -132,7 +132,21 @@ function CaseDetailPage() {
                 </Button>
                 <Button
                   onClick={() => execute.mutate()}
-                  disabled={execute.isPending || !latest || data.status === "recovered"}
+                  disabled={
+                    execute.isPending ||
+                    !latest ||
+                    latest.recommended_action === "NO_ACTION" ||
+                    ["recovered", "stopped", "escalated"].includes(data.status)
+                  }
+                  title={
+                    !latest
+                      ? "Run the analysis first"
+                      : latest.recommended_action === "NO_ACTION"
+                        ? "No eligible recovery action for this case"
+                        : ["recovered", "stopped", "escalated"].includes(data.status)
+                          ? "This case has reached a terminal state"
+                          : undefined
+                  }
                 >
                   {execute.isPending ? (
                     <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -141,6 +155,7 @@ function CaseDetailPage() {
                   )}
                   Execute recovery action
                 </Button>
+
               </>
             }
           />
