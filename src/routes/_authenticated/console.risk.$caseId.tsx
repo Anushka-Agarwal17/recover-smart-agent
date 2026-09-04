@@ -121,7 +121,10 @@ function CaseDetailPage() {
                 <Button
                   variant="outline"
                   onClick={() => analyze.mutate()}
-                  disabled={analyze.isPending || data.status === "recovered"}
+                  disabled={
+                    analyze.isPending || ["recovered", "stopped", "escalated"].includes(data.status)
+                  }
+
                 >
                   {analyze.isPending ? (
                     <Loader2 className="size-4 animate-spin" aria-hidden />
