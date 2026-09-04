@@ -84,11 +84,13 @@ function QueuePage() {
     mutationFn: (caseId: string) => executeRecovery({ data: { caseId } }),
     onSuccess: async (result) => {
       if (result.outcome === "SUCCESS") toast.success(result.message);
-      else toast.warning(result.message);
+      else if (result.outcome === "BLOCKED") toast.warning(result.message);
+      else toast.info(result.message);
       await refresh();
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Execution failed."),
   });
+
 
   return (
     <div className="space-y-6">
