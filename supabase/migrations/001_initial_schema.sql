@@ -1,4 +1,4 @@
-﻿-- =============================================================
+-- =============================================================
 -- RecoverAI ΓÇö full schema migration for your own Supabase project
 -- Run this in: Supabase Dashboard ΓåÆ SQL Editor ΓåÆ New query ΓåÆ Run
 -- =============================================================

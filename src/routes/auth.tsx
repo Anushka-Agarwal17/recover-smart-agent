@@ -1,4 +1,4 @@
-﻿import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { Loader2, Mail, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -91,7 +91,7 @@ function AuthPage() {
             msg.toLowerCase().includes("not found")
           ) {
             setInlineError(
-              "Incorrect email or password. If you just created an account, you need to confirm your email first ΓÇö check your inbox for a confirmation link.",
+              "Incorrect email or password. If you just created an account, check your inbox for a confirmation link first.",
             );
           } else if (msg.toLowerCase().includes("confirm")) {
             setInlineError(
