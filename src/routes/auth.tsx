@@ -1,5 +1,5 @@
-import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+﻿import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
+import { Loader2, Mail, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -9,9 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 
-const TITLE = "Sign in — RecoverAI Revenue Recovery Console";
+const TITLE = "Sign in ΓÇö RecoverAI Revenue Recovery Console";
 const DESCRIPTION =
   "Sign in to the RecoverAI console to review revenue at risk, AI recovery decisions and simulated intervention outcomes.";
 
@@ -37,30 +36,74 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState<"email" | "google" | null>(null);
+  // shown after signup when email confirmation is required
+  const [awaitingConfirm, setAwaitingConfirm] = useState(false);
+  // inline error banner (not toast) for persistent messages
+  const [inlineError, setInlineError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Handle OAuth callback: Supabase appends #access_token=... to the redirect URI.
+    const hash = window.location.hash;
+    if (hash && hash.includes("access_token")) {
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session) {
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+          void router.navigate({ to: "/console" });
+        }
+      });
+      return;
+    }
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) void router.navigate({ to: "/console" });
     });
   }, [router]);
 
+  const clearError = () => setInlineError(null);
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
+    clearError();
     setBusy("email");
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/console` },
+          options: { emailRedirectTo: `${window.location.origin}/auth` },
         });
         if (error) throw error;
-        toast.success("Account created. Seeding your demo dataset…");
+
+        // If session is returned immediately, email confirmation is disabled ΓÇö go straight in.
+        if (data.session) {
+          await router.navigate({ to: "/console" });
+          return;
+        }
+
+        // No session means confirmation email was sent.
+        setAwaitingConfirm(true);
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          const msg = error.message ?? "";
+          if (
+            msg.toLowerCase().includes("invalid") ||
+            msg.toLowerCase().includes("credentials") ||
+            msg.toLowerCase().includes("not found")
+          ) {
+            setInlineError(
+              "Incorrect email or password. If you just created an account, you need to confirm your email first ΓÇö check your inbox for a confirmation link.",
+            );
+          } else if (msg.toLowerCase().includes("confirm")) {
+            setInlineError(
+              "Email not confirmed yet. Check your inbox and click the confirmation link, then try signing in again.",
+            );
+          } else {
+            setInlineError(msg || "Authentication failed. Please try again.");
+          }
+          return;
+        }
+        await router.navigate({ to: "/console" });
       }
-      await router.navigate({ to: "/console" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Authentication failed. Please try again.");
     } finally {
@@ -69,19 +112,67 @@ function AuthPage() {
   };
 
   const google = async () => {
+    clearError();
     setBusy("google");
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+        },
+      });
+      if (error) {
+        const msg = error.message ?? "";
+        if (msg.includes("OAuth secret") || msg.includes("provider") || error.status === 400) {
+          setInlineError(
+            "Google sign-in is not configured yet. Go to your Supabase dashboard ΓåÆ Authentication ΓåÆ Providers ΓåÆ Google and add your Google Client ID and Secret.",
+          );
+        } else {
+          setInlineError("Google sign-in failed: " + msg);
+        }
+        setBusy(null);
+      }
+      // On success the browser is redirected to Google ΓÇö nothing more to do.
+    } catch {
       toast.error("Google sign-in failed. Please try again or use email.");
       setBusy(null);
-      return;
     }
-    if (result.redirected) return;
-    await router.navigate({ to: "/console" });
   };
 
+  // ΓöÇΓöÇ "Check your email" screen ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  if (awaitingConfirm) {
+    return (
+      <div className="grid-glow flex min-h-screen items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
+          <Link to="/" className="mx-auto flex w-fit" aria-label="RecoverAI home">
+            <Logo />
+          </Link>
+          <div className="panel mt-6 p-6 text-center">
+            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="size-6 text-primary" aria-hidden />
+            </div>
+            <h1 className="mt-4 text-xl font-semibold tracking-tight">Check your email</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              We sent a confirmation link to <span className="font-medium text-foreground">{email}</span>.
+              Click it to activate your account, then come back here to sign in.
+            </p>
+            <Button
+              variant="outline"
+              className="mt-6 w-full"
+              onClick={() => {
+                setAwaitingConfirm(false);
+                setIsSignUp(false);
+              }}
+            >
+              Back to sign in
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ΓöÇΓöÇ Main auth form ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   return (
     <div className="grid-glow flex min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
@@ -98,6 +189,14 @@ function AuthPage() {
               ? "A reproducible synthetic dataset is generated for your account on first load."
               : "Continue to your revenue-at-risk dashboard."}
           </p>
+
+          {/* Inline error banner */}
+          {inlineError && (
+            <div className="mt-4 flex items-start gap-2.5 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <span>{inlineError}</span>
+            </div>
+          )}
 
           <Button
             type="button"
@@ -116,7 +215,7 @@ function AuthPage() {
             <span className="h-px flex-1 bg-border" />
           </div>
 
-          <form onSubmit={submit} className="space-y-4">
+          <form onSubmit={submit} className="space-y-4" onChange={clearError}>
             <div className="space-y-1.5">
               <Label htmlFor="email">Work email</Label>
               <Input
@@ -150,7 +249,7 @@ function AuthPage() {
 
           <button
             type="button"
-            onClick={() => setIsSignUp((v) => !v)}
+            onClick={() => { setIsSignUp((v) => !v); clearError(); }}
             className="mt-5 w-full text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
           >
             {isSignUp ? "Already have an account? Sign in" : "New here? Create an account"}
