@@ -10,9 +10,16 @@ import { getWorkspace } from "@/lib/recoverai.functions";
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
-    return { user: data.user };
+    // ssr:false means this only runs on the client — safe to use localStorage session
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) throw redirect({ to: "/auth" });
+      return { user: data.user };
+    } catch (e) {
+      // Re-throw redirects, swallow other errors and redirect to auth
+      if (e != null && typeof e === "object" && "to" in e) throw e;
+      throw redirect({ to: "/auth" });
+    }
   },
   component: AuthenticatedLayout,
 });
